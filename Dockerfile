@@ -22,21 +22,22 @@ RUN wget https://www.noip.com/client/linux/noip-duc-linux.tar.gz && \
     cd noip-2.1.9-1 && \
     make install
 
-# Configure No-IP DUC using expect script
-RUN expect -c "
-spawn /usr/local/bin/noip2 -C
-expect \"Please enter the login/email string for no-ip.com  \"
-send \"$NOIP_USERNAME\r\"
-expect \"Please enter the password for user '$NOIP_USERNAME'  \"
-send \"$NOIP_PASSWORD\r\"
-expect \"Only one host \"
-send \"\r\"
-expect \"Do you wish to have them updated \"
-send \"y\r\"
-expect \"New configuration file \"
-send \"\r\"
-interact
-"
+# Create an expect script to automate No-IP DUC configuration
+RUN echo '#!/usr/bin/expect -f' > /usr/local/bin/noip-setup && \
+    echo 'spawn /usr/local/bin/noip2 -C' >> /usr/local/bin/noip-setup && \
+    echo 'expect "Please enter the login/email string for no-ip.com"' >> /usr/local/bin/noip-setup && \
+    echo 'send "$env(NOIP_USERNAME)\r"' >> /usr/local/bin/noip-setup && \
+    echo 'expect "Please enter the password for user"' >> /usr/local/bin/noip-setup && \
+    echo 'send "$env(NOIP_PASSWORD)\r"' >> /usr/local/bin/noip-setup && \
+    echo 'expect "Only one host"' >> /usr/local/bin/noip-setup && \
+    echo 'send "\r"' >> /usr/local/bin/noip-setup && \
+    echo 'expect "Do you wish to have them updated"' >> /usr/local/bin/noip-setup && \
+    echo 'send "y\r"' >> /usr/local/bin/noip-setup && \
+    echo 'expect "New configuration file"' >> /usr/local/bin/noip-setup && \
+    echo 'send "\r"' >> /usr/local/bin/noip-setup && \
+    echo 'interact' >> /usr/local/bin/noip-setup && \
+    chmod +x /usr/local/bin/noip-setup && \
+    /usr/local/bin/noip-setup
 
 # IPsec configuration
 RUN echo ": PSK \"$IPSEC_PSK\"" > /etc/ipsec.secrets && \
