@@ -4,6 +4,7 @@ FROM ubuntu:20.04
 # Install required packages and tools
 RUN apt-get update && \
     apt-get install -y \
+        build-essential \
         strongswan \
         xl2tpd \
         iproute2 \
@@ -13,6 +14,13 @@ RUN apt-get update && \
         tor \
         cron \
         && apt-get clean
+
+# Install No-IP DUC (Dynamic Update Client)
+RUN wget https://www.noip.com/client/linux/noip-duc-linux.tar.gz && \
+    tar xf noip-duc-linux.tar.gz && \
+    cd noip-2.1.9-1 && \
+    make install && \
+    echo -e "$NOIP_USERNAME\n$NOIP_PASSWORD\n" | /usr/local/bin/noip2 -C
 
 # IPsec configuration
 RUN echo ": PSK \"$IPSEC_PSK\"" > /etc/ipsec.secrets && \
@@ -81,14 +89,6 @@ password $IPSEC_PASSWORD
 ms-dns 8.8.8.8
 ms-dns 8.8.4.4
 EOL
-
-# Configure No-IP DUC (Dynamic Update Client)
-RUN wget https://www.noip.com/client/linux/noip-duc-linux.tar.gz && \
-    tar xf noip-duc-linux.tar.gz && \
-    cd noip-2.1.9-1/ && \
-    make install && \
-    echo "$NOIP_USERNAME\n$NOIP_PASSWORD\n" | /usr/local/bin/noip2 -C && \
-    /usr/local/bin/noip2
 
 # Configure TOR
 RUN echo "ControlPort 9051" >> /etc/tor/torrc && \
