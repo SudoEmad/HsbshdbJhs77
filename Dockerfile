@@ -1,6 +1,10 @@
 # Use a base image with a compatible Linux distribution
 FROM ubuntu:20.04
 
+# Set environment variables to avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=America/New_York
+
 # Install required packages and tools
 RUN apt-get update && \
     apt-get install -y \
