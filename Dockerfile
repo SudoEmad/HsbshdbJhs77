@@ -15,7 +15,7 @@ RUN apt-get update && \
         && apt-get clean
 
 # Copy the .env file
-COPY .env /root/.env
+COPY .env ./.env
 
 # Set environment variables from .env file
 RUN export $(grep -v '^#' /root/.env | xargs) && \
