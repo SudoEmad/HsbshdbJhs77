@@ -13,14 +13,30 @@ RUN apt-get update && \
         vim \
         tor \
         cron \
+        expect \
         && apt-get clean
 
 # Install No-IP DUC (Dynamic Update Client)
 RUN wget https://www.noip.com/client/linux/noip-duc-linux.tar.gz && \
     tar xf noip-duc-linux.tar.gz && \
     cd noip-2.1.9-1 && \
-    make install && \
-    echo -e "$NOIP_USERNAME\n$NOIP_PASSWORD\n" | /usr/local/bin/noip2 -C
+    make install
+
+# Configure No-IP DUC using expect script
+RUN expect -c "
+spawn /usr/local/bin/noip2 -C
+expect \"Please enter the login/email string for no-ip.com  \"
+send \"$NOIP_USERNAME\r\"
+expect \"Please enter the password for user '$NOIP_USERNAME'  \"
+send \"$NOIP_PASSWORD\r\"
+expect \"Only one host \"
+send \"\r\"
+expect \"Do you wish to have them updated \"
+send \"y\r\"
+expect \"New configuration file \"
+send \"\r\"
+interact
+"
 
 # IPsec configuration
 RUN echo ": PSK \"$IPSEC_PSK\"" > /etc/ipsec.secrets && \
