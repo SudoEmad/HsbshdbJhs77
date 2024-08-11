@@ -28,6 +28,7 @@ RUN wget https://www.noip.com/client/linux/noip-duc-linux.tar.gz && \
 
 # Create an expect script to automate No-IP DUC configuration
 RUN echo '#!/usr/bin/expect -f' > /usr/local/bin/noip-setup && \
+    echo 'set timeout 10' >> /usr/local/bin/noip-setup && \
     echo 'spawn /usr/local/bin/noip2 -C' >> /usr/local/bin/noip-setup && \
     echo 'expect "Please enter the login/email string for no-ip.com"' >> /usr/local/bin/noip-setup && \
     echo 'send "$env(NOIP_USERNAME)\r"' >> /usr/local/bin/noip-setup && \
