@@ -14,18 +14,11 @@ RUN apt-get update && \
         cron \
         && apt-get clean
 
-# Copy the .env file
-COPY .env ./.env
-
-# Set environment variables from .env file
-RUN export $(grep -v '^#' /root/.env | xargs) && \
-    echo ": PSK \"$IPSEC_PSK\"" > /etc/ipsec.secrets && \
+# IPsec configuration
+RUN echo ": PSK \"$IPSEC_PSK\"" > /etc/ipsec.secrets && \
     echo "$IPSEC_IDENTIFIER : EAP \"$IPSEC_PASSWORD\"" >> /etc/ipsec.secrets && \
     echo "$IPSEC_IDENTIFIER * \"$IPSEC_PASSWORD\" *" > /etc/ppp/chap-secrets && \
-    echo "$L2TP_SECRET * $IPSEC_IDENTIFIER $IPSEC_PASSWORD" >> /etc/ppp/chap-secrets
-
-# IPsec configuration
-RUN export $(grep -v '^#' /root/.env | xargs) && \
+    echo "$L2TP_SECRET * $IPSEC_IDENTIFIER $IPSEC_PASSWORD" >> /etc/ppp/chap-secrets && \
     cat <<EOL > /etc/ipsec.conf
 config setup
     charon {
@@ -61,8 +54,7 @@ conn L2TP-IPsec
 EOL
 
 # L2TP configuration
-RUN export $(grep -v '^#' /root/.env | xargs) && \
-    cat <<EOL > /etc/xl2tpd/xl2tpd.conf
+RUN cat <<EOL > /etc/xl2tpd/xl2tpd.conf
 [global]
 port = 1701
 
@@ -79,8 +71,7 @@ length bit = yes
 EOL
 
 # PPP options for L2TP
-RUN export $(grep -v '^#' /root/.env | xargs) && \
-    cat <<EOL > /etc/ppp/options.xl2tpd
+RUN cat <<EOL > /etc/ppp/options.xl2tpd
 require-mschap-v2
 refuse-pap
 refuse-chap
